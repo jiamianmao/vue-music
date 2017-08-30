@@ -1,10 +1,11 @@
 <template>
   <div class='search'>
     <div class="search-box-wrapper">
-      <search-box @query='onQueryChange'></search-box>
+      <search-box @query='onQueryChange' ref='searchBox'></search-box>
     </div>
-    <div class="shortcut-wrapper">
-      <div class="shortcut">
+    <div class="shortcut-wrapper" v-show='!query'>
+      <scroll class="shortcut" ref='shortcut' :data='shortcut'>
+
         <div>
           <div class="hot-key">
             <h1 class="title">热门搜索</h1>
@@ -23,22 +24,66 @@
             </h1>
           </div>
         </div>
-      </div>
+
+      </scroll>
     </div>
   </div>
 </template>
 
 <script>
   import SearchBox from '@/base/search-box/search-box'
+  import { ERR_OK } from '@/api/config'
+  import Scroll from '@/base/scroll/scroll'
+  import { mapGetters } from 'vuex'
 
   export default {
     data () {
       return {
-        hotKey: []
+        hotKey: [],
+        query: ''
+      }
+    },
+    created () {
+      this._getHotSearch()
+    },
+    methods: {
+      _getHotSearch () {
+        let timestamp = +new Date()
+        this.$http.get(`/api/splcloud/fcgi-bin/gethotkey.fcg?g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=${timestamp}`)
+        .then(res => {
+          let response = res.data
+          if (response.code === ERR_OK) {
+            this.hotKey = response.data.hotkey.slice(0, 10)
+          }
+        })
+      },
+      onQueryChange (val) {
+        this.query = val
+      },
+      addQuery (k) {
+        this.$refs.searchBox.setQuery(k)
+      }
+    },
+    computed: {
+      shortcut () {
+        return this.hotKey.concat(this.searchHistory)
+      },
+      ...mapGetters([
+        'searchHistory'
+      ])
+    },
+    watch: {
+      query (newQuery) {
+        if (!newQuery) {
+          this.$nextTick(() => {
+            this.$refs.shortcut.refresh()
+          })
+        }
       }
     },
     components: {
-      SearchBox
+      SearchBox,
+      Scroll
     }
   }
   </script>

@@ -80,7 +80,7 @@
         </div>
         <div class="text">
           <h2 class="name">{{currentSong.singer}}</h2>
-          <p class="desc" v-html='currentSong.album'></p>
+          <p class="desc" v-html='currentSong.name'></p>
         </div>
         <div class='control'>
           <progress-circle :radius='radius' :percent='percent'>

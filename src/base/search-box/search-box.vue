@@ -28,6 +28,9 @@
       blur () {
         this.$refs.query.blur()
       },
+      setQuery (query) {
+        this.query = query
+      },
       getAnswer: _.debounce(
         function (newVal) {
           this.$emit('query', newVal)
